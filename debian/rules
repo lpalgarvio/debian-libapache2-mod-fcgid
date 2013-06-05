@@ -1,0 +1,27 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+include /usr/share/cdbs/1/rules/debhelper.mk
+
+DEB_FIXPERMS_EXCLUDE = var/lib/apache2/fcgid/sock
+CUR_PKGDEST=$(CURDIR)/debian/$(cdbs_curpkg)
+DEB_INSTALL_CHANGELOGS_ALL=CHANGES-FCGID
+DEB_DH_STRIP_ARGS := --dbg-package=libapache2-mod-fcgid-dbg -k
+
+configure/libapache2-mod-fcgid::
+	APXS=apxs2 ./configure.apxs
+
+build/libapache2-mod-fcgid::
+	make
+
+cleanbuilddir/libapache2-mod-fcgid::
+	[ ! -f Makefile ] || make distclean
+
+install/libapache2-mod-fcgid::
+	make install DESTDIR=$(CUR_PKGDEST)
+	rm -r $(CUR_PKGDEST)/usr/share/apache2 $(CUR_PKGDEST)/etc
+
+binary-install/libapache2-mod-fcgid::
+	mkdir -p $(CUR_PKGDEST)/var/lib/apache2/fcgid/sock
+	chown -R www-data:www-data $(CUR_PKGDEST)/var/lib/apache2/fcgid
+	chmod -R 755 $(CUR_PKGDEST)/var/lib/apache2/fcgid
+	dh_apache2 -p$(cdbs_curpkg)

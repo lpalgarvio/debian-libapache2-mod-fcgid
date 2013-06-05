@@ -1,0 +1,2 @@
+mod debian/fcgid.load
+mod debian/fcgid.conf

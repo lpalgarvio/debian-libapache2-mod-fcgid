@@ -1,0 +1,21 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 10_debian_default_sockprefix.dpatch by  <sugi@nemui.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Change default socket and shm path to compt with debian layout.
+
+@DPATCH@
+diff -urNad libapache2-mod-fcgid~/modules/fcgid/fcgid_conf.c libapache2-mod-fcgid/modules/fcgid/fcgid_conf.c
+--- libapache2-mod-fcgid~/modules/fcgid/fcgid_conf.c	2010-02-01 05:15:22.000000000 +0900
++++ libapache2-mod-fcgid/modules/fcgid/fcgid_conf.c	2010-02-01 05:19:23.281304519 +0900
+@@ -39,8 +39,8 @@
+ #define DEFAULT_ERROR_SCAN_INTERVAL 3
+ #define DEFAULT_ZOMBIE_SCAN_INTERVAL 3
+ #define DEFAULT_PROC_LIFETIME (60*60)
+-#define DEFAULT_SOCKET_PREFIX DEFAULT_REL_RUNTIMEDIR "/fcgidsock"
+-#define DEFAULT_SHM_PATH      DEFAULT_REL_RUNTIMEDIR "/fcgid_shm"
++#define DEFAULT_SOCKET_PREFIX "/var/lib/apache2/fcgid/sock"
++#define DEFAULT_SHM_PATH      "/var/lib/apache2/fcgid/shm"
+ #define DEFAULT_SPAWNSOCRE_UPLIMIT 10
+ #define DEFAULT_SPAWN_SCORE 1
+ #define DEFAULT_TERMINATION_SCORE 2

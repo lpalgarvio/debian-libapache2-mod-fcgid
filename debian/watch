@@ -1,0 +1,2 @@
+version=3
+http://httpd.apache.org/download.cgi .*/mod_fcgid-(\d.*)\.(?:tgz|tar\.(?:gz|bz2|xz))
