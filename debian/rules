@@ -1,27 +1,26 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
-include /usr/share/cdbs/1/rules/debhelper.mk
 
-DEB_FIXPERMS_EXCLUDE = var/lib/apache2/fcgid/sock
-CUR_PKGDEST=$(CURDIR)/debian/$(cdbs_curpkg)
-DEB_INSTALL_CHANGELOGS_ALL=CHANGES-FCGID
-DEB_DH_STRIP_ARGS := --dbg-package=libapache2-mod-fcgid-dbg -k
+# TODO: distclean?
 
-configure/libapache2-mod-fcgid::
+%:
+	dh $@ --parallel --with apache2
+
+override_dh_auto_configure:
 	APXS=apxs2 ./configure.apxs
 
-build/libapache2-mod-fcgid::
-	make
+override_dh_install:
+	dh_install --fail-missing \
+	  -X/usr/share/apache2/default-site/htdocs/manual \
+	  -X/etc/apache2
 
-cleanbuilddir/libapache2-mod-fcgid::
-	[ ! -f Makefile ] || make distclean
+override_dh_installchangelogs:
+	dh_installchangelogs CHANGES-FCGID
 
-install/libapache2-mod-fcgid::
-	make install DESTDIR=$(CUR_PKGDEST)
-	rm -r $(CUR_PKGDEST)/usr/share/apache2 $(CUR_PKGDEST)/etc
+override_dh_strip:
+	dh_strip --dbg-package=libapache2-mod-fcgid-dbg
 
-binary-install/libapache2-mod-fcgid::
-	mkdir -p $(CUR_PKGDEST)/var/lib/apache2/fcgid/sock
-	chown -R www-data:www-data $(CUR_PKGDEST)/var/lib/apache2/fcgid
-	chmod -R 755 $(CUR_PKGDEST)/var/lib/apache2/fcgid
-	dh_apache2 -p$(cdbs_curpkg)
+override_dh_fixperms:
+	dh_fixperms
+	chown -R www-data:www-data debian/libapache2-mod-fcgid/var/lib/apache2/fcgid
+	chmod -R 755 debian/libapache2-mod-fcgid/var/lib/apache2/fcgid

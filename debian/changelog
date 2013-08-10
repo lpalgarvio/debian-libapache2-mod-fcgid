@@ -1,6 +1,7 @@
 libapache2-mod-fcgid (1:2.3.7-1) UNRELEASED; urgency=low
 
   * Adopt the package. (Closes: #713917)
+  * Switch from cdbs to dh-style rules file.
 
  -- Felix Geyer <fgeyer@debian.org>  Sat, 10 Aug 2013 10:35:57 +0200
 
