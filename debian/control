@@ -3,7 +3,7 @@ Section: httpd
 Priority: optional
 Maintainer: Felix Geyer <fgeyer@debian.org>
 Build-Depends: debhelper (>= 9), apache2-dev (>= 2.4)
-Standards-Version: 3.9.1
+Standards-Version: 3.9.4
 Homepage: http://httpd.apache.org/mod_fcgid/
 
 Package: libapache2-mod-fcgid
