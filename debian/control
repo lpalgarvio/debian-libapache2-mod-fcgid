@@ -1,10 +1,9 @@
 Source: libapache2-mod-fcgid
 Section: httpd
 Priority: optional
-Maintainer: Tatsuki Sugiura <sugi@nemui.org>
+Maintainer: Felix Geyer <fgeyer@debian.org>
 Build-Depends: debhelper (>= 5.0.0), apache2-dev (>= 2.4), libtool, cdbs, libapr1-dev, pkg-config
 Standards-Version: 3.9.1
-Uploaders: Taku YASUI <tach@debian.or.jp>
 Homepage: http://httpd.apache.org/mod_fcgid/
 
 Package: libapache2-mod-fcgid
