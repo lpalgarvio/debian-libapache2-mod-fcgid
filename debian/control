@@ -12,12 +12,10 @@ Package: libapache2-mod-fcgid
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: FastCGI interface module for Apache 2
- mod_fcgid is a high performance alternative to mod_cgi or mod_cgid,
- which starts a sufficient number instances of the CGI program to handle
- concurrent requests, and these programs remain running to handle further
- incoming requests. It is favored by the PHP developers, for example,
- as a preferred alternative to running mod_php in-process, delivering 
- very similar performance.
+ This package contains mod_fcgid, a high-performance alternative to mod_cgi
+ or mod_cgid. It starts a sufficient number of instances of the CGI program
+ to handle concurrent requests. These programs remain running to handle
+ further incoming requests.
  .
  It is a binary-compatible alternative to Apache module mod_fastcgi.
 
@@ -27,13 +25,9 @@ Section: debug
 Priority: extra
 Depends: libapache2-mod-fcgid (= ${binary:Version}), ${misc:Depends}
 Description: debugging symbols for mod_fcgid
- mod_fcgid is a high performance alternative to mod_cgi or mod_cgid,
- which starts a sufficient number instances of the CGI program to handle
- concurrent requests, and these programs remain running to handle further
- incoming requests. It is favored by the PHP developers, for example,
- as a preferred alternative to running mod_php in-process, delivering 
- very similar performance.
- .
- It is a binary-compatible alternative to Apache module mod_fastcgi.
+ This package contains mod_fcgid, a high-performance alternative to mod_cgi
+ or mod_cgid. It starts a sufficient number of instances of the CGI program
+ to handle concurrent requests. These programs remain running to handle
+ further incoming requests.
  .
  This package contains the debugging symbols for mod_fcgid.

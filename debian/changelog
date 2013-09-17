@@ -1,3 +1,9 @@
+libapache2-mod-fcgid (1:2.3.7-2) UNRELEASED; urgency=low
+
+  * Further improve the long description. (Closes: #719534)
+
+ -- Felix Geyer <fgeyer@debian.org>  Tue, 17 Sep 2013 21:33:21 +0200
+
 libapache2-mod-fcgid (1:2.3.7-1) unstable; urgency=low
 
   * Adopt the package. (Closes: #713917)
