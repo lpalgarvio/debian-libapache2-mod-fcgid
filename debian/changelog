@@ -1,10 +1,10 @@
-libapache2-mod-fcgid (1:2.3.9-1) UNRELEASED; urgency=low
+libapache2-mod-fcgid (1:2.3.9-1) unstable; urgency=high
 
   * New upstream release.
     - Fixes CVE-2013-4365: heap buffer overwrite. (Closes: #725942)
   * Further improve the long description. (Closes: #719534)
 
- -- Felix Geyer <fgeyer@debian.org>  Tue, 17 Sep 2013 21:33:21 +0200
+ -- Felix Geyer <fgeyer@debian.org>  Thu, 10 Oct 2013 19:49:42 +0200
 
 libapache2-mod-fcgid (1:2.3.7-1) unstable; urgency=low
 
