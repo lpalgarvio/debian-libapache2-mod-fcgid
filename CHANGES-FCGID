@@ -1,4 +1,35 @@
                                                          -*- coding: utf-8 -*-
+Changes with mod_fcgid 2.3.9
+
+  *) Revert fix for PR 53693, added in 2.3.8 but undocumented.  Fix
+     issues with a minor optimization added in 2.3.8.  [Jeff Trawick]
+
+Changes with mod_fcgid 2.3.8
+
+  *) SECURITY: CVE-2013-4365 (cve.mitre.org)
+     Fix possible heap buffer overwrite.  Reported and solved by:
+     [Robert Matthews <rob tigertech.com>]
+
+  *) Add experimental cmake-based build system for Windows.  [Jeff Trawick]
+
+  *) Correctly parse quotation and escaped spaces in FcgidWrapper and the
+     AAA Authenticator/Authorizor/Access directives' command line argument,
+     as currently documented.  PR 51194  [William Rowe]
+
+  *) Honor quoted FcgidCmdOptions arguments (notably for InitialEnv
+     assignments).  PR 51657  [William Rowe]
+
+  *) Conform script response parsing with mod_cgid and ensure no response
+     body is sent when ap_meets_conditions() determines that request
+     conditions are met.  [Chris Darroch]
+
+  *) Improve logging in access control hook functions.  [Chris Darroch]
+
+  *) Avoid making internal sub-requests and processing Location headers
+     when in FCGI_AUTHORIZER mode, as the auth hook functions already
+     treat Location headers returned by scripts as an error since
+     redirections are not meaningful in this mode.  [Chris Darroch]
+     
 Changes with mod_fcgid 2.3.7
 
   *) Introduce FcgidWin32PreventOrphans directive on Windows to use OS

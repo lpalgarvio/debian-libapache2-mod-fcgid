@@ -621,9 +621,16 @@ const char *set_authenticator_info(cmd_parms * cmd, void *config,
     apr_status_t rv;
     apr_finfo_t finfo;
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
+    char **args;
+
+    /* Get wrapper path */
+    apr_tokenize_to_argv(authenticator, &args, cmd->temp_pool);
+
+    if (*args == NULL || **args == '\0')
+        return "Invalid authenticator config";
 
     /* Fetch only required file details inode + device */
-    if ((rv = apr_stat(&finfo, authenticator, APR_FINFO_IDENT,
+    if ((rv = apr_stat(&finfo, args[0], APR_FINFO_IDENT,
                        cmd->temp_pool)) != APR_SUCCESS) {
         return missing_file_msg(cmd->pool, "Authenticator", authenticator, rv);
     }
@@ -632,10 +639,8 @@ const char *set_authenticator_info(cmd_parms * cmd, void *config,
     dirconfig->authenticator_info =
         apr_pcalloc(cmd->server->process->pconf,
                     sizeof(*dirconfig->authenticator_info));
-    dirconfig->authenticator_info->cgipath =
-        apr_pstrdup(cmd->pool, authenticator);
-    dirconfig->authenticator_info->cmdline =
-        dirconfig->authenticator_info->cgipath;
+    dirconfig->authenticator_info->cgipath = apr_pstrdup(cmd->pool, args[0]);
+    dirconfig->authenticator_info->cmdline = authenticator;
     dirconfig->authenticator_info->inode = finfo.inode;
     dirconfig->authenticator_info->deviceid = finfo.device;
     return NULL;
@@ -670,9 +675,16 @@ const char *set_authorizer_info(cmd_parms * cmd, void *config,
     apr_status_t rv;
     apr_finfo_t finfo;
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
+    char **args;
+
+    /* Get wrapper path */
+    apr_tokenize_to_argv(authorizer, &args, cmd->temp_pool);
+
+    if (*args == NULL || **args == '\0')
+        return "Invalid authorizer config";
 
     /* Fetch only required file details inode + device */
-    if ((rv = apr_stat(&finfo, authorizer, APR_FINFO_IDENT,
+    if ((rv = apr_stat(&finfo, args[0], APR_FINFO_IDENT,
                        cmd->temp_pool)) != APR_SUCCESS) {
         return missing_file_msg(cmd->pool, "Authorizer", authorizer, rv);
     }
@@ -681,10 +693,8 @@ const char *set_authorizer_info(cmd_parms * cmd, void *config,
     dirconfig->authorizer_info =
         apr_pcalloc(cmd->server->process->pconf,
                     sizeof(*dirconfig->authorizer_info));
-    dirconfig->authorizer_info->cgipath =
-        apr_pstrdup(cmd->pool, authorizer);
-    dirconfig->authorizer_info->cmdline =
-        dirconfig->authorizer_info->cgipath;
+    dirconfig->authorizer_info->cgipath = apr_pstrdup(cmd->pool, args[0]);
+    dirconfig->authorizer_info->cmdline = authorizer;
     dirconfig->authorizer_info->inode = finfo.inode;
     dirconfig->authorizer_info->deviceid = finfo.device;
     return NULL;
@@ -719,9 +729,16 @@ const char *set_access_info(cmd_parms * cmd, void *config,
     apr_status_t rv;
     apr_finfo_t finfo;
     fcgid_dir_conf *dirconfig = (fcgid_dir_conf *) config;
+    char **args;
+
+    /* Get wrapper path */
+    apr_tokenize_to_argv(access, &args, cmd->temp_pool);
+
+    if (*args == NULL || **args == '\0')
+        return "Invalid access config";
 
     /* Fetch only required file details inode + device */
-    if ((rv = apr_stat(&finfo, access, APR_FINFO_IDENT,
+    if ((rv = apr_stat(&finfo, args[0], APR_FINFO_IDENT,
                        cmd->temp_pool)) != APR_SUCCESS) {
         return missing_file_msg(cmd->pool, "Access checker", access, rv);
     }
@@ -730,10 +747,8 @@ const char *set_access_info(cmd_parms * cmd, void *config,
     dirconfig->access_info =
         apr_pcalloc(cmd->server->process->pconf,
                     sizeof(*dirconfig->access_info));
-    dirconfig->access_info->cgipath =
-        apr_pstrdup(cmd->pool, access);
-    dirconfig->access_info->cmdline =
-        dirconfig->access_info->cgipath;
+    dirconfig->access_info->cgipath = apr_pstrdup(cmd->pool, args[0]);
+    dirconfig->access_info->cmdline = access;
     dirconfig->access_info->inode = finfo.inode;
     dirconfig->access_info->deviceid = finfo.device;
     return NULL;
@@ -749,6 +764,18 @@ const char *set_access_authoritative(cmd_parms * cmd,
     return NULL;
 }
 
+fcgid_cmd_conf *get_access_info(request_rec * r, int *authoritative)
+{
+    fcgid_dir_conf *config =
+        ap_get_module_config(r->per_dir_config, &fcgid_module);
+
+    if (config != NULL && config->access_info != NULL) {
+        *authoritative = config->access_authoritative;
+        return config->access_info;
+    }
+
+    return NULL;
+}
 
 #ifdef WIN32
 /* FcgidWin32PreventOrphans
@@ -814,29 +841,17 @@ const char *set_win32_prevent_process_orphans(cmd_parms *cmd, void *dummy,
 }
 #endif /* WIN32*/
 
-fcgid_cmd_conf *get_access_info(request_rec * r, int *authoritative)
-{
-    fcgid_dir_conf *config =
-        ap_get_module_config(r->per_dir_config, &fcgid_module);
-
-    if (config != NULL && config->access_info != NULL) {
-        *authoritative = config->access_authoritative;
-        return config->access_info;
-    }
-
-    return NULL;
-}
-
 const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
                                const char *wrapper_cmdline,
                                const char *extension,
                                const char *virtual)
 {
-    const char *path, *tmp;
+    const char *path;
     apr_status_t rv;
     apr_finfo_t finfo;
     fcgid_cmd_conf *wrapper = NULL;
     fcgid_dir_conf *config = (fcgid_dir_conf *) dirconfig;
+    char **args;
 
     /* Sanity checks */
 
@@ -855,8 +870,9 @@ const char *set_wrapper_config(cmd_parms * cmd, void *dirconfig,
         return "Invalid wrapper file extension";
 
     /* Get wrapper path */
-    tmp = wrapper_cmdline;
-    path = ap_getword_white(cmd->temp_pool, &tmp);
+    apr_tokenize_to_argv(wrapper_cmdline, &args, cmd->temp_pool);
+    path = apr_pstrdup(cmd->pool, args[0]);
+
     if (path == NULL || *path == '\0')
         return "Invalid wrapper config";
 
@@ -994,14 +1010,14 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
     }
 
     while (*args) {
-        const char *option = ap_getword_white(cmd->pool, &args);
+        const char *option = ap_getword_conf(cmd->pool, &args);
         const char *val;
 
         /* TODO: Consider supporting BusyTimeout.
          */
 
         if (!strcasecmp(option, "ConnectTimeout")) {
-            val = ap_getword_white(cmd->pool, &args);
+            val = ap_getword_conf(cmd->pool, &args);
             if (!strlen(val)) {
                 return "ConnectTimeout must have an argument";
             }
@@ -1010,7 +1026,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         }
 
         if (!strcasecmp(option, "IdleTimeout")) {
-            val = ap_getword_white(cmd->pool, &args);
+            val = ap_getword_conf(cmd->pool, &args);
             if (!strlen(val)) {
                 return "IdleTimeout must have an argument";
             }
@@ -1022,7 +1038,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
             char *name;
             char *eql;
 
-            name = ap_getword_white(cmd->pool, &args);
+            name = ap_getword_conf(cmd->pool, &args);
             if (!strlen(name)) {
                 return "InitialEnv must have an argument";
             }
@@ -1041,7 +1057,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         }
 
         if (!strcasecmp(option, "IOTimeout")) {
-            val = ap_getword_white(cmd->pool, &args);
+            val = ap_getword_conf(cmd->pool, &args);
             if (!strlen(val)) {
                 return "IOTimeout must have an argument";
             }
@@ -1050,7 +1066,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         }
 
         if (!strcasecmp(option, "MaxProcesses")) {
-            val = ap_getword_white(cmd->pool, &args);
+            val = ap_getword_conf(cmd->pool, &args);
             if (!strlen(val)) {
                 return "MaxProcesses must have an argument";
             }
@@ -1059,7 +1075,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         }
 
         if (!strcasecmp(option, "MaxProcessLifetime")) {
-            val = ap_getword_white(cmd->pool, &args);
+            val = ap_getword_conf(cmd->pool, &args);
             if (!strlen(val)) {
                 return "MaxProcessLifetime must have an argument";
             }
@@ -1068,7 +1084,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         }
 
         if (!strcasecmp(option, "MaxRequestsPerProcess")) {
-            val = ap_getword_white(cmd->pool, &args);
+            val = ap_getword_conf(cmd->pool, &args);
             if (!strlen(val)) {
                 return "MaxRequestsPerProcess must have an argument";
             }
@@ -1077,7 +1093,7 @@ const char *set_cmd_options(cmd_parms *cmd, void *dummy, const char *args)
         }
 
         if (!strcasecmp(option, "MinProcesses")) {
-            val = ap_getword_white(cmd->pool, &args);
+            val = ap_getword_conf(cmd->pool, &args);
             if (!strlen(val)) {
                 return "MinProcesses must have an argument";
             }

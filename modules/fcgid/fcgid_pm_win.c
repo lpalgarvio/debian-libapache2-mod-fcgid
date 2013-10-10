@@ -44,7 +44,7 @@ static void *APR_THREAD_FUNC wakeup_thread(apr_thread_t * thd, void *data)
             apr_sleep(apr_time_from_sec(1));
         }
 
-        /* Send a wake up message to procmgr_peek_cmd() */
+        /* Send a wake up message to procmgr_fetch_cmd() */
         if (!g_must_exit && g_msgqueue)
             apr_queue_trypush(g_msgqueue, NULL);
     }
@@ -96,7 +96,7 @@ procmgr_post_config(server_rec * main_server, apr_pool_t * pconf)
         exit(1);
     }
 
-    /* Calculate procmgr_peek_cmd wake up interval */
+    /* Calculate procmgr_fetch_cmd wake up interval */
     g_wakeup_timeout = min(sconf->error_scan_interval,
                            sconf->busy_scan_interval);
     g_wakeup_timeout = min(sconf->idle_scan_interval,
@@ -136,14 +136,14 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
     fcgid_server_conf *sconf =
         ap_get_module_config(r->server->module_config, &fcgid_module);
 
-    memset(command, 0, sizeof(*command));
-
     /* no truncation should ever occur */
     AP_DEBUG_ASSERT(sizeof command->cgipath > strlen(cmd_conf->cgipath));
     apr_cpystrn(command->cgipath, cmd_conf->cgipath, sizeof command->cgipath);
     AP_DEBUG_ASSERT(sizeof command->cmdline > strlen(cmd_conf->cmdline));
     apr_cpystrn(command->cmdline, cmd_conf->cmdline, sizeof command->cmdline);
 
+    command->inode = (apr_ino_t) -1;
+    command->deviceid = (dev_t) -1;
     command->uid = (uid_t) - 1;
     command->gid = (gid_t) - 1;
     command->userdir = 0;
@@ -152,11 +152,14 @@ void procmgr_init_spawn_cmd(fcgid_command * command, request_rec * r,
         apr_cpystrn(command->server_hostname, r->server->server_hostname,
                     sizeof command->server_hostname);
     }
+    else {
+        command->server_hostname[0] = '\0';
+    }
 
     get_cmd_options(r, command->cgipath, &command->cmdopts, &command->cmdenv);
 }
 
-apr_status_t procmgr_post_spawn_cmd(fcgid_command * command,
+apr_status_t procmgr_send_spawn_cmd(fcgid_command * command,
                                     request_rec * r)
 {
     if (g_thread && g_msgqueue && !g_must_exit
@@ -226,7 +229,7 @@ apr_status_t procmgr_finish_notify(server_rec * main_server)
     return rv;
 }
 
-apr_status_t procmgr_peek_cmd(fcgid_command * command,
+apr_status_t procmgr_fetch_cmd(fcgid_command * command,
                               server_rec * main_server)
 {
     fcgid_command *peakcmd = NULL;
