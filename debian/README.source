@@ -1,0 +1,9 @@
+Verifying upstream tarball
+==========================
+
+They keys are fetched from:
+https://www.apache.org/dist/httpd/KEYS
+
+and can be improted like this:
+mkdir gnupg
+gpg --homedir=gnupg --no-default-keyring --keyring upstream-signing-key.pgp --import KEYS

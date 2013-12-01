@@ -1,3 +1,9 @@
+libapache2-mod-fcgid (1:2.3.9-2) UNRELEASED; urgency=low
+
+  * Import upstream gpg keys for uscan to verify the orig tarball.
+
+ -- Felix Geyer <fgeyer@debian.org>  Sun, 01 Dec 2013 10:46:54 +0100
+
 libapache2-mod-fcgid (1:2.3.9-1) unstable; urgency=high
 
   * New upstream release.
